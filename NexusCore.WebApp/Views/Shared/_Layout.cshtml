@@ -1,0 +1,188 @@
+﻿<!doctype html>
+<html lang="pt-BR">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
+
+    <!-- Favicon icon-->
+    <link rel="apple-touch-icon" sizes="180x180" href="~/assets/images/favicon/apple-touch-icon.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="~/assets/images/favicon/favicon-32x32.png" />
+    <link rel="icon" type="image/png" sizes="16x16" href="~/assets/images/favicon/favicon-16x16.png" />
+    <link rel="manifest" href="~/assets/images/favicon/site.webmanifest" />
+    <link rel="mask-icon" href="~/assets/images/favicon/block-safari-pinned-tab.svg" color="#8b3dff" />
+    <link rel="shortcut icon" href="~/assets/images/favicon/favicon.ico" />
+    <meta name="msapplication-TileColor" content="#8b3dff" />
+    <meta name="msapplication-config" content="~/assets/images/favicon/tile.xml" />
+
+    <!-- Color modes -->
+    <script src="~/assets/js/vendors/color-modes.js"></script>
+
+    <!-- Libs CSS -->
+    <link href="~/assets/libs/simplebar/dist/simplebar.min.css" rel="stylesheet" />
+    <link href="~/assets/libs/bootstrap-icons/font/bootstrap-icons.min.css" rel="stylesheet" />
+
+    <!-- Scroll Cue -->
+    <link rel="stylesheet" href="~/assets/libs/scrollcue/scrollCue.css" />
+
+    <!-- Box icons -->
+    <link rel="stylesheet" href="~/assets/fonts/css/boxicons.min.css" />
+
+    <!-- Theme CSS -->
+    <link rel="stylesheet" href="~/assets/css/theme.min.css">
+
+    <title>@ViewData["Title"] - NexusCore</title>
+</head>
+<body>
+    <!-- Navbar -->
+    <header>
+        <nav class="navbar navbar-expand-lg navbar-light w-100">
+            <div class="container px-3">
+                <a class="navbar-brand" asp-controller="Home" asp-action="Index">
+                    <img src="~/assets/images/logo/logo.svg" alt="NexusCore" />
+                </a>
+                <button class="navbar-toggler offcanvas-nav-btn" type="button">
+                    <i class="bi bi-list"></i>
+                </button>
+                <div class="offcanvas offcanvas-start offcanvas-nav" style="width: 20rem">
+                    <div class="offcanvas-header">
+                        <a asp-controller="Home" asp-action="Index" class="text-inverse">
+                            <img src="~/assets/images/logo/logo.svg" alt="NexusCore" />
+                        </a>
+                        <button type="button" class="btn-close" data-bs-dismiss="offcanvas" aria-label="Close"></button>
+                    </div>
+                    <div class="offcanvas-body pt-0 align-items-center">
+                        <ul class="navbar-nav mx-auto align-items-lg-center">
+                            @if (User.IsInRole("admin"))
+                            {
+                                <li class="nav-item"><a asp-area="Admin" asp-controller="Products" asp-action="Index" class="nav-link">Productos SaaS</a></li>
+                            }
+                        </ul>
+                        <div class="mt-3 mt-lg-0 d-flex align-items-center">
+                            @if (User.Identity is { IsAuthenticated: true })
+                            {
+                                <div class="dropdown">
+                                    <a class="btn btn-primary dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                                        @(User.FindFirst("FullName")?.Value ?? User.Identity.Name)
+                                    </a>
+                                    <ul class="dropdown-menu">
+                                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Dashboard">Minha Conta</a></li>
+                                        <li><a class="dropdown-item" asp-controller="Account" asp-action="Profile">Meu Perfil</a></li>
+                                        <li><hr class="dropdown-divider"></li>
+                                        <li>
+                                            <form asp-controller="Account" asp-action="Logout" method="post">
+                                                <button type="submit" class="dropdown-item">Sair</button>
+                                            </form>
+                                        </li>
+                                    </ul>
+                                </div>
+                            }
+                            else
+                            {
+                                <a asp-controller="Account" asp-action="Login" class="btn btn-light mx-2">Login</a>
+                                <a asp-controller="Account" asp-action="Register" class="btn btn-primary">Criar conta</a>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </header>
+
+    <main>
+        @RenderBody()
+    </main>
+
+    <div id="status-toast-container" style="position: fixed; top: 1rem; right: 1rem; z-index: 1050;"></div>
+
+    <footer class="pt-7">
+        <div class="container mt-7 pt-lg-7 pb-4">
+            <div class="row align-items-center">
+                <div class="col-md-3">
+                    <a class="mb-4 mb-lg-0 d-block text-inverse" href="@Url.Action("Index", "Home")">
+                        <img src="~/assets/images/logo/logo.svg" alt="NexusCore" />
+                    </a>
+                </div>
+                <div class="col-md-9 col-lg-6">
+                    <div class="small mb-3 mb-lg-0 text-lg-center">
+                        Copyright © @DateTime.Now.Year
+                        <span class="text-primary">NexusCore</span>
+                        | Desenvolvido com ASP.NET Core MVC
+                    </div>
+                </div>
+                <div class="col-lg-3">
+                    <div class="text-lg-end d-flex align-items-center justify-content-lg-end">
+                        <div class="dropdown">
+                            <button class="btn btn-light btn-icon rounded-circle d-flex align-items-center"
+                                    type="button" aria-expanded="false" data-bs-toggle="dropdown" aria-label="Toggle theme (auto)">
+                                <i class="bi theme-icon-active lh-1"><i class="bi theme-icon bi-sun-fill"></i></i>
+                                <span class="visually-hidden bs-theme-text">Toggle theme</span>
+                            </button>
+                            <ul class="dropdown-menu dropdown-menu-end shadow" aria-labelledby="bs-theme-text">
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center active"
+                                            data-bs-theme-value="light" aria-pressed="true">
+                                        <i class="bi theme-icon bi-sun-fill"></i>
+                                        <span class="ms-2">Light</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center"
+                                            data-bs-theme-value="dark" aria-pressed="false">
+                                        <i class="bi theme-icon bi-moon-stars-fill"></i>
+                                        <span class="ms-2">Dark</span>
+                                    </button>
+                                </li>
+                                <li>
+                                    <button type="button" class="dropdown-item d-flex align-items-center"
+                                            data-bs-theme-value="auto" aria-pressed="false">
+                                        <i class="bi theme-icon bi-circle-half"></i>
+                                        <span class="ms-2">Auto</span>
+                                    </button>
+                                </li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Libs JS -->
+    <script src="~/assets/libs/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/assets/libs/simplebar/dist/simplebar.min.js"></script>
+    <script src="~/assets/libs/headhesive/dist/headhesive.min.js"></script>
+
+    <!-- Theme JS -->
+    <script src="~/assets/js/theme.min.js"></script>
+
+    @await RenderSectionAsync("Scripts", required: false)
+
+    @if (TempData["StatusMessage"] != null)
+    {
+        <script>
+            document.addEventListener('DOMContentLoaded', function () {
+                const message = @Html.Raw(Json.Serialize(TempData["StatusMessage"]));
+                const toastContainer = document.getElementById('status-toast-container');
+
+                // Determina a cor do toast com base na mensagem (sucesso vs. erro)
+                const isError = message.toLowerCase().startsWith('erro:');
+                const bgColor = isError ? 'bg-danger' : 'bg-success';
+
+                const toastHtml = `
+                    <div class="toast show align-items-center text-white ${bgColor} border-0" role="alert" aria-live="assertive" aria-atomic="true">
+                        <div class="d-flex">
+                            <div class="toast-body">${message}</div>
+                            <button type="button" class="btn-close btn-close-white me-2 m-auto" data-bs-dismiss="toast" aria-label="Close"></button>
+                        </div>
+                    </div>`;
+
+                toastContainer.innerHTML = toastHtml;
+
+                const toastElement = toastContainer.querySelector('.toast');
+                const bsToast = new bootstrap.Toast(toastElement, { delay: 5000 });
+                bsToast.show();
+            });
+        </script>
+    }
+</body>
+</html>

@@ -1,0 +1,27 @@
+﻿@model NexusCore.Application.DTOs.ProductDto
+@{
+    ViewData["Title"] = "Excluir Produto";
+}
+
+<div class="card border-danger shadow-sm">
+    <div class="card-header bg-danger text-white">
+        <h4 class="card-title mb-0">@ViewData["Title"]</h4>
+    </div>
+    <div class="card-body">
+        <h5 class="card-title">Você tem certeza que deseja excluir este produto?</h5>
+        <p>Esta ação não pode ser desfeita.</p>
+        <hr />
+        <dl class="row">
+            <dt class="col-sm-3">Nome</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Name)</dd>
+            <dt class="col-sm-3">Descrição</dt>
+            <dd class="col-sm-9">@Html.DisplayFor(model => model.Description)</dd>
+        </dl>
+
+        <form asp-action="Delete">
+            <input type="hidden" asp-for="Id" />
+            <button type="submit" class="btn btn-danger">Sim, Excluir</button>
+            <a asp-action="Index" class="btn btn-secondary ms-2">Cancelar</a>
+        </form>
+    </div>
+</div>

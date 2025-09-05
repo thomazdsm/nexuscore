@@ -1,0 +1,46 @@
+﻿@model NexusCore.WebApp.Models.Product.ProductViewModel
+@{
+    ViewData["Title"] = "Novo Produto";
+}
+
+<div class="card border-0 shadow-sm">
+    <div class="card-header bg-white border-bottom">
+        <h4 class="card-title mb-0">@ViewData["Title"]</h4>
+    </div>
+    <div class="card-body">
+        <form asp-action="Create">
+            <div asp-validation-summary-all class="text-danger mb-3"></div>
+
+            <h5>Detalhes do Produto</h5>
+            <hr class="mt-0" />
+            <div class="mb-3">
+                <label asp-for="Name" class="form-label"></label>
+                <input asp-for="Name" class="form-control" />
+                <span asp-validation-for="Name" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="Description" class="form-label"></label>
+                <textarea asp-for="Description" class="form-control" rows="3"></textarea>
+                <span asp-validation-for="Description" class="text-danger"></span>
+            </div>
+
+            <h5 class="mt-4">Configuração de Segurança (OIDC)</h5>
+            <hr class="mt-0" />
+            <div class="mb-3">
+                <label asp-for="RedirectUri" class="form-label"></label>
+                <input asp-for="RedirectUri" class="form-control" placeholder="https://meusaas.com/signin-oidc" />
+                <span asp-validation-for="RedirectUri" class="text-danger"></span>
+            </div>
+            <div class="mb-3">
+                <label asp-for="PostLogoutRedirectUri" class="form-label"></label>
+                <input asp-for="PostLogoutRedirectUri" class="form-control" placeholder="https://meusaas.com/signout-callback-oidc" />
+                <span asp-validation-for="PostLogoutRedirectUri" class="text-danger"></span>
+            </div>
+
+            <div class="mt-4">
+                <button type="submit" class="btn btn-primary">Salvar Produto</button>
+                <a asp-action="Index" class="btn btn-light ms-2">Cancelar</a>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,55 @@
+version: '3.8'
+
+services:
+  # Serviço do Banco de Dados (sem alterações)
+  nexuscore-db:
+    image: postgres:16
+    container_name: nexuscore-db
+    environment:
+      - POSTGRES_DB=NexusCoreDb
+      - POSTGRES_USER=admin
+      - POSTGRES_PASSWORD=admin
+    ports:
+      - "5432:5432"
+    volumes:
+      - nexuscore-db-data:/var/lib/postgresql/data
+    restart: always
+
+  # Serviço da Aplicação Web (COM ALTERAÇÕES)
+  nexuscore-webapp:
+    container_name: nexuscore-webapp
+    build:
+      context: .
+      dockerfile: Dockerfile
+    # REMOVEMOS A SEÇÃO 'ports'. A aplicação não será mais exposta diretamente.
+    environment:
+      - ASPNETCORE_ENVIRONMENT=Production
+      - ASPNETCORE_URLS=http://+:8080
+      - ConnectionStrings__DefaultConnection=Host=nexuscore-db;Port=5432;Database=NexusCoreDb;Username=admin;Password=admin
+    depends_on:
+      - nexuscore-db
+    restart: on-failure
+    volumes:
+      - nexuscore-dataprotection-keys:/root/.aspnet/DataProtection-Keys
+
+  # NOVO SERVIÇO: Caddy Reverse Proxy
+  caddy:
+    image: caddy:latest
+    container_name: nexuscore-caddy
+    restart: unless-stopped
+    ports:
+      - "80:80"   # Porta para o tráfego HTTP
+      - "443:443" # Porta para o tráfego HTTPS
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile            # Mapeia nosso arquivo de configuração
+      - caddy_data:/data                           # Volume para os certificados SSL
+      - caddy_config:/config                       # Volume para a configuração interna do Caddy
+    depends_on:
+      - nexuscore-webapp # Garante que o Caddy só inicie depois da aplicação
+
+# Define os volumes nomeados
+volumes:
+  nexuscore-db-data:
+  caddy_data:
+  caddy_config:
+  nexuscore-dataprotection-keys: {}

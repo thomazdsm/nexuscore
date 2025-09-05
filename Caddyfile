@@ -1,0 +1,7 @@
+nexuscore.local {
+    # Gera um certificado SSL local e força HTTPS
+    tls internal
+
+    # Redireciona o tráfego para o nosso container da aplicação web, na porta interna 8080
+    reverse_proxy nexuscore-webapp:8080
+}
