@@ -15,7 +15,7 @@ services:
       - nexuscore-db-data:/var/lib/postgresql/data
     restart: always
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U admin"]
+      test: ["CMD-SHELL", "pg_isready -U admin -d NexusCoreDb"]
       interval: 5s
       timeout: 5s
       retries: 5
@@ -31,8 +31,6 @@ services:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
       - ConnectionStrings__DefaultConnection=Host=nexuscore-db;Port=5432;Database=NexusCoreDb;Username=admin;Password=admin
-    depends_on:
-      - nexuscore-db
     restart: on-failure
     volumes:
       - nexuscore-dataprotection-keys:/root/.aspnet/DataProtection-Keys

@@ -34,8 +34,18 @@ namespace NexusCore.Infra.IoC
             // A única fonte de verdade para a configuração do DbContext.
             services.AddDbContext<AppDbContext>(options =>
             {
-                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
+                {
+                    // Adiciona a política de retentativa para a conexão com o banco
+                    npgsqlOptions.EnableRetryOnFailure(
+                        maxRetryCount: 5, // Tenta reconectar até 5 vezes
+                        maxRetryDelay: TimeSpan.FromSeconds(10), // Espera no máximo 10s entre as tentativas
+                        errorCodesToAdd: null);
+                });
                 options.UseOpenIddict();
+
+                //options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
+                //options.UseOpenIddict();
             });
 
             // 4. CONFIGURAÇÃO DO OPENIDDICT
