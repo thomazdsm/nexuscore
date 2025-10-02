@@ -14,6 +14,11 @@ services:
     volumes:
       - nexuscore-db-data:/var/lib/postgresql/data
     restart: always
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U admin"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
 
   # Serviço da Aplicação Web (COM ALTERAÇÕES)
   nexuscore-webapp:
@@ -33,6 +38,9 @@ services:
       - nexuscore-dataprotection-keys:/root/.aspnet/DataProtection-Keys
     networks:
       - caddy_network
+    depends_on:
+      nexuscore-db:
+        condition: service_healthy
 
 # Define os volumes nomeados
 volumes:
