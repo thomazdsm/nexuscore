@@ -54,6 +54,32 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}");
 
 // Executa o método de seed para popular o banco de dados.
-await SeedData.EnsureSeedData(app.Services);
+//await SeedData.EnsureSeedData(app.Services);
+// Adiciona uma política de retentativa manual na inicialização
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var maxRetries = 5;
+for (int i = 0; i < maxRetries; i++)
+{
+    try
+    {
+        logger.LogInformation("Tentando popular os dados iniciais (Tentativa {Attempt}/{MaxAttempts})...", i + 1, maxRetries);
+        SeedData.EnsureSeedData(app.Services);
+        logger.LogInformation("Dados iniciais populados com sucesso.");
+        break; // Sai do loop se for bem-sucedido
+    }
+    catch (Exception ex)
+    {
+        logger.LogError(ex, "Erro ao popular dados iniciais. Tentando novamente em 5 segundos...");
+        if (i < maxRetries - 1)
+        {
+            await Task.Delay(5000); // Espera 5 segundos antes da próxima tentativa
+        }
+        else
+        {
+            logger.LogCritical("Não foi possível conectar ao banco de dados após múltiplas tentativas. A aplicação será encerrada.");
+            throw; // Lança a exceção se todas as tentativas falharem
+        }
+    }
+}
 
 app.Run();
