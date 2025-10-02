@@ -31,25 +31,14 @@ services:
     restart: on-failure
     volumes:
       - nexuscore-dataprotection-keys:/root/.aspnet/DataProtection-Keys
-
-  # NOVO SERVIÇO: Caddy Reverse Proxy
-  caddy:
-    image: caddy:latest
-    container_name: nexuscore-caddy
-    restart: unless-stopped
-    ports:
-      - "80:80"   # Porta para o tráfego HTTP
-      - "443:443" # Porta para o tráfego HTTPS
-    volumes:
-      - ./Caddyfile:/etc/caddy/Caddyfile            # Mapeia nosso arquivo de configuração
-      - caddy_data:/data                           # Volume para os certificados SSL
-      - caddy_config:/config                       # Volume para a configuração interna do Caddy
-    depends_on:
-      - nexuscore-webapp # Garante que o Caddy só inicie depois da aplicação
+    networks:
+      - caddy_network
 
 # Define os volumes nomeados
 volumes:
   nexuscore-db-data:
-  caddy_data:
-  caddy_config:
   nexuscore-dataprotection-keys: {}
+
+networks:
+  caddy_network:
+    external: true
