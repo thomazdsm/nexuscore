@@ -28,6 +28,11 @@ COPY --from=publish /app/publish .
 # Cria um grupo e um usuário não-root para executar a aplicação.
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
+# TODO: FIX PARA PROD: Os métodos AddDevelopment...Certificate() não são recomendados para produção. (DI)
+# Define variáveis de ambiente para o diretório home do usuário appuser.
+ENV HOME=/home/appuser
+RUN mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser
+
 # Define o usuário que irá rodar o processo
 USER appuser
 
