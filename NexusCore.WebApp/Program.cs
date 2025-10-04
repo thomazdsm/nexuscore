@@ -2,6 +2,7 @@ using Microsoft.AspNetCore.DataProtection;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.Identity;
 using NexusCore.Domain.Entities;
+using NexusCore.Infra.Data.Context;
 using NexusCore.Infra.Data.Seed;
 using NexusCore.Infra.IoC;
 using NexusCore.WebApp.Services;
@@ -29,6 +30,39 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 var app = builder.Build();
 
+// Aplica migrações e faz o seed dos dados com política de retentativa.
+var logger = app.Services.GetRequiredService<ILogger<Program>>();
+var maxRetries = 5;
+var retryDelay = TimeSpan.FromSeconds(5);
+
+for (int i = 0; i < maxRetries; i++)
+{
+    try
+    {
+        logger.LogInformation("Tentando inicializar o banco de dados (Tentativa {Attempt}/{MaxAttempts})...", i + 1, maxRetries);
+
+        // Chama nosso novo método que aplica migrações e faz o seed
+        await DatabaseInitializer.InitializeDatabaseAsync(app.Services);
+
+        logger.LogInformation("Banco de dados inicializado com sucesso.");
+        break; // Sai do loop se for bem-sucedido
+    }
+    catch (Exception ex)
+    {
+        // O Npgsql.NpgsqlException é comum aqui se o contêiner do DB ainda não estiver pronto.
+        logger.LogError(ex, "Erro ao inicializar o banco de dados. Tentando novamente em {RetryDelay} segundos...", retryDelay.Seconds);
+        if (i < maxRetries - 1)
+        {
+            await Task.Delay(retryDelay); // Espera antes da próxima tentativa
+        }
+        else
+        {
+            logger.LogCritical("Não foi possível conectar e inicializar o banco de dados após múltiplas tentativas. A aplicação será encerrada.");
+            throw; // Lança a exceção se todas as tentativas falharem
+        }
+    }
+}
+
 // Usa o middleware de Forwarded Headers no início do pipeline.
 app.UseForwardedHeaders();
 
@@ -55,31 +89,6 @@ app.MapControllerRoute(
 
 // Executa o método de seed para popular o banco de dados.
 //await SeedData.EnsureSeedData(app.Services);
-// Adiciona uma política de retentativa manual na inicialização
-var logger = app.Services.GetRequiredService<ILogger<Program>>();
-var maxRetries = 5;
-for (int i = 0; i < maxRetries; i++)
-{
-    try
-    {
-        logger.LogInformation("Tentando popular os dados iniciais (Tentativa {Attempt}/{MaxAttempts})...", i + 1, maxRetries);
-        SeedData.EnsureSeedData(app.Services);
-        logger.LogInformation("Dados iniciais populados com sucesso.");
-        break; // Sai do loop se for bem-sucedido
-    }
-    catch (Exception ex)
-    {
-        logger.LogError(ex, "Erro ao popular dados iniciais. Tentando novamente em 5 segundos...");
-        if (i < maxRetries - 1)
-        {
-            await Task.Delay(5000); // Espera 5 segundos antes da próxima tentativa
-        }
-        else
-        {
-            logger.LogCritical("Não foi possível conectar ao banco de dados após múltiplas tentativas. A aplicação será encerrada.");
-            throw; // Lança a exceção se todas as tentativas falharem
-        }
-    }
-}
+
 
 app.Run();

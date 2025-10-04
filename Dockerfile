@@ -24,4 +24,14 @@ RUN dotnet publish "NexusCore.WebApp.csproj" -c Release -o /app/publish /p:UseAp
 FROM mcr.microsoft.com/dotnet/aspnet:9.0 AS final
 WORKDIR /app
 COPY --from=publish /app/publish .
+
+# Cria um grupo e um usuário não-root para executar a aplicação.
+RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+
+# Define o usuário que irá rodar o processo
+USER appuser
+
+# Documenta a porta que a aplicação escuta, conforme definido em ASPNETCORE_URLS.
+EXPOSE 8080
+
 ENTRYPOINT ["dotnet", "NexusCore.WebApp.dll"]
