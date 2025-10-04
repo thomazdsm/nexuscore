@@ -1,7 +1,7 @@
 version: '3.8'
 
 services:
-  # Serviço do Banco de Dados (sem alterações)
+  # Serviço do Banco de Dados
   nexuscore-db:
     image: postgres:16
     container_name: nexuscore-db
@@ -19,14 +19,17 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+    # CONECTA O DB APENAS À REDE INTERNA.
+    # Ele não é visível para o Caddy ou para o mundo exterior.
+    networks:
+      - nexuscore-network
 
-  # Serviço da Aplicação Web (COM ALTERAÇÕES)
+  # Serviço da Aplicação Web
   nexuscore-webapp:
     container_name: nexuscore-webapp
     build:
       context: .
       dockerfile: Dockerfile
-    # REMOVEMOS A SEÇÃO 'ports'. A aplicação não será mais exposta diretamente.
     environment:
       - ASPNETCORE_ENVIRONMENT=Production
       - ASPNETCORE_URLS=http://+:8080
@@ -34,8 +37,11 @@ services:
     restart: on-failure
     volumes:
       - nexuscore-dataprotection-keys:/root/.aspnet/DataProtection-Keys
+    # CONECTA O WEBAPP A AMBAS AS REDES.
+    # Ele pode falar com o Caddy (pela caddy_network) e com o DB (pela nexuscore-network).
     networks:
       - caddy_network
+      - nexuscore-network
     depends_on:
       nexuscore-db:
         condition: service_healthy
@@ -45,6 +51,12 @@ volumes:
   nexuscore-db-data:
   nexuscore-dataprotection-keys: {}
 
+# Define as redes
 networks:
+  # Rede interna para comunicação entre a aplicação e o banco de dados.
+  nexuscore-network:
+    driver: bridge
+
+  # Rede externa para comunicação com o proxy reverso Caddy.
   caddy_network:
     external: true

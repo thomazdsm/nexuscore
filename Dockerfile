@@ -26,7 +26,7 @@ WORKDIR /app
 COPY --from=publish /app/publish .
 
 # Cria um grupo e um usuário não-root para executar a aplicação.
-RUN addgroup -S appgroup && adduser -S appuser -G appgroup
+RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
 
 # Define o usuário que irá rodar o processo
 USER appuser
