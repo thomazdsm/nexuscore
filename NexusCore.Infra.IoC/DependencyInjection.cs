@@ -9,6 +9,7 @@ using NexusCore.Domain.Interfaces;
 using NexusCore.Infra.Data.Context;
 using NexusCore.Infra.Data.Repositories;
 using NexusCore.Infra.IoC.Services;
+using Microsoft.AspNetCore.Http; 
 
 namespace NexusCore.Infra.IoC
 {
@@ -28,6 +29,16 @@ namespace NexusCore.Infra.IoC
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/Account/Login";
+
+                // Garante que o cookie funcione corretamente atrás de um proxy reverso (Caddy)
+                // que está terminando a conexão TLS/HTTPS.
+                options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
+
+                // Durante o desenvolvimento e teste com domínios diferentes (localhost vs .tech),
+                // isso relaxa a política de SameSite para permitir que o cookie de autenticação
+                // seja enviado corretamente após o redirecionamento do Laravel.
+                // ATENÇÃO: Para produção real com um único domínio, considere usar SameSiteMode.Lax ou Strict.
+                options.Cookie.SameSite = SameSiteMode.None;
             });
 
             // 3. REGISTRO DO DBCONTEXT
