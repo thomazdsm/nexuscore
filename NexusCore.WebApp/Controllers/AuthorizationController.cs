@@ -27,6 +27,19 @@ namespace NexusCore.WebApp.Controllers
             if (request.IsAuthorizationCodeGrantType())
             {
                 var result = await HttpContext.AuthenticateAsync(IdentityConstants.ApplicationScheme);
+                
+                // VERIFICAÇÃO ADICIONADA: Garante que a autenticação do cookie da sessão foi bem-sucedida.
+                if (!result.Succeeded)
+                {
+                    return Forbid(
+                        authenticationSchemes: OpenIddictServerAspNetCoreDefaults.AuthenticationScheme,
+                        properties: new AuthenticationProperties(new Dictionary<string, string?>
+                        {
+                            [OpenIddictServerAspNetCoreConstants.Properties.Error] = OpenIddictConstants.Errors.InvalidGrant,
+                            [OpenIddictServerAspNetCoreConstants.Properties.ErrorDescription] = "The authorization code is no longer valid because the session has expired."
+                        }));
+                }
+                
                 var user = await _userManager.GetUserAsync(result.Principal);
                 if (user == null)
                 {
