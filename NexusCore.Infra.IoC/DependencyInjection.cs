@@ -17,49 +17,33 @@ namespace NexusCore.Infra.IoC
     {
         public static IServiceCollection AddInfrastructure(this IServiceCollection services, IConfiguration configuration)
         {
-
-            // 1. REGISTRO DO IDENTITY
-            // O AddIdentity já registra os serviços de autenticação necessários, incluindo o cookie handler.
+            // REGISTRO DO IDENTITY
             services.AddIdentity<ApplicationUser, IdentityRole>()
                 .AddEntityFrameworkStores<AppDbContext>()
                 .AddDefaultTokenProviders();
 
-            // 2. CONFIGURAÇÃO DO COOKIE DO IDENTITY (O MODO CORRETO)
-            // Usamos ConfigureApplicationCookie para customizar as opções do cookie que o AddIdentity já registrou.
+            // CONFIGURAÇÃO DO COOKIE DO IDENTITY (O MODO CORRETO)
             services.ConfigureApplicationCookie(options =>
             {
                 options.LoginPath = "/Account/Login";
-
-                // Garante que o cookie funcione corretamente atrás de um proxy reverso (Caddy)
-                // que está terminando a conexão TLS/HTTPS.
                 options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
-
-                // Durante o desenvolvimento e teste com domínios diferentes (localhost vs .tech),
-                // isso relaxa a política de SameSite para permitir que o cookie de autenticação
-                // seja enviado corretamente após o redirecionamento do Laravel.
-                // ATENÇÃO: Para produção real com um único domínio, considere usar SameSiteMode.Lax ou Strict.
                 options.Cookie.SameSite = SameSiteMode.None;
             });
 
-            // 3. REGISTRO DO DBCONTEXT
-            // A única fonte de verdade para a configuração do DbContext.
+            // REGISTRO DO DBCONTEXT
             services.AddDbContext<AppDbContext>(options =>
             {
                 options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"), npgsqlOptions =>
                 {
-                    // Adiciona a política de retentativa para a conexão com o banco
                     npgsqlOptions.EnableRetryOnFailure(
-                        maxRetryCount: 5, // Tenta reconectar até 5 vezes
-                        maxRetryDelay: TimeSpan.FromSeconds(10), // Espera no máximo 10s entre as tentativas
+                        maxRetryCount: 5,
+                        maxRetryDelay: TimeSpan.FromSeconds(10),
                         errorCodesToAdd: null);
                 });
                 options.UseOpenIddict();
-
-                //options.UseNpgsql(configuration.GetConnectionString("DefaultConnection"));
-                //options.UseOpenIddict();
             });
 
-            // 4. CONFIGURAÇÃO DO OPENIDDICT
+            // CONFIGURAÇÃO DO OPENIDDICT
             services.AddOpenIddict()
                 .AddCore(options =>
                 {
@@ -86,9 +70,7 @@ namespace NexusCore.Infra.IoC
             
             // Configura a fila de e-mails
             services.AddSingleton<IEmailQueue, EmailQueue>();
-            // Adiciona o serviço que processará a fila em background
             services.AddHostedService<BackgroundEmailSender>();
-            // O IEmailSender agora apenas enfileira os e-mails
             services.AddTransient<IEmailSender, EmailSender>();
 
             services.AddAutoMapper(cfg => cfg.LicenseKey = configuration["AutoMapper:LicenseKey"], AppDomain.CurrentDomain.GetAssemblies());

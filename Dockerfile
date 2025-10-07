@@ -37,19 +37,19 @@ RUN mkdir -p /home/appuser && chown -R appuser:appgroup /home/appuser
 USER appuser
 
 # Documenta a porta que a aplicação escuta, conforme definido em ASPNETCORE_URLS.
-# EXPOSE 8080
+EXPOSE 8080
 
-# ENTRYPOINT ["dotnet", "NexusCore.WebApp.dll"]
+ENTRYPOINT ["dotnet", "NexusCore.WebApp.dll"]
 
 # --- ALTERAÇÕES ABAIXO ---
 # Copia o novo script de entrypoint para dentro da imagem e define suas permissões
-COPY --chown=appuser:appgroup entrypoint.sh /usr/local/bin/entrypoint.sh
+#COPY --chown=appuser:appgroup entrypoint.sh /usr/local/bin/entrypoint.sh
 
 # ADICIONE ESTA LINHA para dar permissão de execução ao script DENTRO da imagem
-RUN chmod +x /usr/local/bin/entrypoint.sh
+# RUN chmod +x /usr/local/bin/entrypoint.sh
 
 # Define o script como o ponto de entrada que será executado ao iniciar o contêiner
-ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
+# ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]
 
 # Define o comando padrão que o entrypoint irá executar após ajustar as permissões
 CMD ["dotnet", "NexusCore.WebApp.dll"]

@@ -50,6 +50,11 @@ namespace NexusCore.Application.Services
             {
                 ClientId = clientId,
                 DisplayName = productDto.Name,
+                ApplicationType = OpenIddictConstants.ClientTypes.Public, 
+                Requirements =
+                {
+                    OpenIddictConstants.Requirements.Features.ProofKeyForCodeExchange
+                },
                 RedirectUris = { new Uri(redirectUri) },
                 PostLogoutRedirectUris = { new Uri(postLogoutRedirectUri) },
                 Permissions =
